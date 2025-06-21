@@ -97,6 +97,13 @@ const UserList = ({ onSelectUser, selectedUser }) => {
     };
   }, [socket, currentUser?._id]);
   
+  // Re-emit get-online-users when socket connects or user logs in
+  useEffect(() => {
+    if (socket && currentUser?._id) {
+      socket.emit('get-online-users');
+    }
+  }, [socket, currentUser?._id]);
+  
   // Debug log before rendering
   console.log('UserList render, users:', users, 'type:', typeof users, 'isArray:', Array.isArray(users));
 

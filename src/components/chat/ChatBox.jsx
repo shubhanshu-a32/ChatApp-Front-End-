@@ -15,25 +15,31 @@ const ChatBox = ({ selectedUser }) => {
       return;
     }
 
-    const roomId = `${currentUser._id}_${selectedUser._id}`;
+    // Ensure consistent roomId for both users
+    const sortedIds = [currentUser._id, selectedUser._id].sort();
+    const roomId = sortedIds.join('_');
     console.log('ChatBox: Joining room', roomId);
     socket.emit('joinRoom', roomId);
 
-    socket.on('chatHistory', (data) => {
+    const handleChatHistory = (data) => {
       console.log('ChatBox: Received chatHistory', data);
       setMessages(data);
-    });
-
-    socket.on('receive_message', (msg) => {
+    };
+    const handleReceiveMessage = (msg) => {
       console.log('ChatBox: Received message', msg);
       setMessages((prev) => [...prev, msg]);
-    });
+    };
+
+    socket.off('chatHistory', handleChatHistory);
+    socket.off('receive_message', handleReceiveMessage);
+    socket.on('chatHistory', handleChatHistory);
+    socket.on('receive_message', handleReceiveMessage);
 
     return () => {
-      socket.off('chatHistory');
-      socket.off('receive_message');
+      socket.off('chatHistory', handleChatHistory);
+      socket.off('receive_message', handleReceiveMessage);
     };
-  }, [selectedUser, socket]);
+  }, [selectedUser, socket, currentUser._id]);
 
   const sendMessage = () => {
     if (!message.trim()) return;
