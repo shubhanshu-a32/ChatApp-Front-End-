@@ -125,7 +125,10 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
   const unreadUserIdsStr = new Set(Array.from(unreadUserIds).map(String));
 
   // Debug log before rendering
-  console.log('UserList render, users:', users.map(u => u._id), 'onlineUserIds:', Array.from(onlineUserIdsStr), 'unreadUserIds:', Array.from(unreadUserIdsStr));
+  console.log('UserList render, users:', users.map(u => ({_id: u._id, name: u.name})), 'onlineUserIds:', Array.from(onlineUserIdsStr), 'unreadUserIds:', Array.from(unreadUserIdsStr));
+  users.forEach(u => {
+    console.log(`UserList: user ${u.name} (${u._id}) isOnline:`, onlineUserIdsStr.has(String(u._id)));
+  });
 
   if (!currentUser) {
     return (
