@@ -12,7 +12,7 @@ const GoogleButton = () => {
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         toast.success('Logged in with Google');
-        navigate('/chat');
+        navigate('/');
       }
     } catch (error) {
       console.error('Google login error:', error);
