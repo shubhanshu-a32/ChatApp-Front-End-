@@ -2,6 +2,7 @@ import { useState } from 'react';
 import useAuth from '../hooks/useAuth';
 import GoogleButton from '../components/auth/GoogleButton';
 import toast from 'react-hot-toast';
+import useNavigate from 'react-router-dom';
 
 const Register = () => {
   const { register } = useAuth();
@@ -12,9 +13,12 @@ const Register = () => {
     password: '',
   });
 
+  const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    navigate('/chat');
     
     try {
       await register(formData);
