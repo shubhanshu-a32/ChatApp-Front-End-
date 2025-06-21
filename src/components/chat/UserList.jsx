@@ -29,6 +29,10 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
         if (isMounted) {
           console.log('Fetched users from /api/users:', res.data);
           setUsers(Array.isArray(res.data) ? res.data : []);
+          if (socket) {
+            console.log('UserList: Forcing get-online-users after user list fetch');
+            socket.emit('get-online-users');
+          }
         }
       } catch (error) {
         console.error('Error fetching users:', error);
