@@ -125,7 +125,9 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
   const unreadUserIdsStr = new Set(Array.from(unreadUserIds).map(String));
 
   // Debug log before rendering
-  console.log('UserList render, users:', users.map(u => ({_id: u._id, name: u.name})), 'onlineUserIds:', Array.from(onlineUserIdsStr), 'unreadUserIds:', Array.from(unreadUserIdsStr));
+  console.log('UserList: currentUser:', currentUser?._id);
+  console.log('UserList: all users:', users.map(u => ({_id: u._id, name: u.name})));
+  console.log('UserList: onlineUserIds:', Array.from(onlineUserIdsStr));
   users.forEach(u => {
     console.log(`UserList: user ${u.name} (${u._id}) isOnline:`, onlineUserIdsStr.has(String(u._id)));
   });
@@ -183,7 +185,7 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
               `}
             >
               <span className="truncate flex items-center gap-2" style={{ maxWidth: '120px' }}>
-                {user.name || `User ${user._id}`}
+                {String(user._id) === String(currentUser?._id) ? 'You' : (user.name || `User ${user._id}`)}
                 {hasUnread && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full animate-pulse" title="New message">
                     <span role="img" aria-label="envelope">📩</span> New
