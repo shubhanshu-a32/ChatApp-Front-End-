@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UserList from '../components/chat/UserList';
 import ChatBox from '../components/chat/ChatBox';
 
 const Chat = () => {
   const [selectedUser, setSelectedUser] = useState(null);
+
+  useEffect(() => {
+    console.log('selectedUser changed:', selectedUser);
+  }, [selectedUser]);
 
   return (
     <div className="flex h-[calc(100vh-120px)]">

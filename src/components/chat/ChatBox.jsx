@@ -10,16 +10,22 @@ const ChatBox = ({ selectedUser }) => {
   const scrollRef = useRef(null);
 
   useEffect(() => {
-    if (!selectedUser || !socket) return;
+    if (!selectedUser || !socket) {
+      console.log('ChatBox: No selectedUser or socket', { selectedUser, socket });
+      return;
+    }
 
     const roomId = `${currentUser._id}_${selectedUser._id}`;
+    console.log('ChatBox: Joining room', roomId);
     socket.emit('joinRoom', roomId);
 
     socket.on('chatHistory', (data) => {
+      console.log('ChatBox: Received chatHistory', data);
       setMessages(data);
     });
 
     socket.on('receive_message', (msg) => {
+      console.log('ChatBox: Received message', msg);
       setMessages((prev) => [...prev, msg]);
     });
 
@@ -31,6 +37,10 @@ const ChatBox = ({ selectedUser }) => {
 
   const sendMessage = () => {
     if (!message.trim()) return;
+    if (!socket) {
+      console.log('ChatBox: Cannot send message, socket not connected');
+      return;
+    }
 
     // Ensure consistent roomId for both users
     const sortedIds = [currentUser._id, selectedUser._id].sort();
@@ -43,6 +53,7 @@ const ChatBox = ({ selectedUser }) => {
       roomId,
     };
 
+    console.log('ChatBox: Sending message', msgData);
     socket.emit('send_message', msgData);
     setMessages((prev) => [...prev, { ...msgData, self: true, user: currentUser.name }]);
     setMessage('');
@@ -53,19 +64,22 @@ const ChatBox = ({ selectedUser }) => {
   }, [messages]);
 
   if (!selectedUser) return <p className="text-center mt-10">Select a user to chat with</p>;
+  if (!socket) return <p className="text-center mt-10 text-red-500">Socket not connected</p>;
 
   return (
-    <div className="flex flex-col h-[80vh] border rounded-xl overflow-hidden">
-      <div className="bg-blue-600 text-white px-4 py-2 font-bold">{selectedUser.name}</div>
-      <div className="flex-1 p-4 overflow-y-auto space-y-2 bg-gray-50">
+    <div className="flex flex-col h-[80vh] border rounded-xl overflow-hidden bg-white dark:bg-zinc-900">
+      <div className="bg-blue-600 text-white px-6 py-3 font-bold text-lg shadow flex items-center">
+        <span className="truncate">{selectedUser.name}</span>
+      </div>
+      <div className="flex-1 p-4 overflow-y-auto space-y-2 bg-gray-50 dark:bg-zinc-800">
         {messages.map((msg, i) => (
           <MessageItem key={i} msg={msg} isSelf={msg.from === currentUser._id} />
         ))}
         <div ref={scrollRef} />
       </div>
-      <div className="flex items-center p-4 border-t">
+      <div className="flex items-center p-4 border-t bg-white dark:bg-zinc-900">
         <input
-          className="flex-1 p-2 border rounded"
+          className="flex-1 p-2 border-2 border-gray-300 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100"
           placeholder="Type your message..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -73,7 +87,7 @@ const ChatBox = ({ selectedUser }) => {
         />
         <button
           onClick={sendMessage}
-          className="ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="ml-3 px-5 py-2 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
         >
           Send
         </button>
