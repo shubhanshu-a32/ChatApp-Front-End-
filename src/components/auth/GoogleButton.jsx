@@ -2,8 +2,10 @@ import { GoogleLogin } from '@react-oauth/google';
 import { googleLogin } from '../../services/authService';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import {useAuth} from './useAuth';
 
 const GoogleButton = () => {
+  const {login} = useAuth();
   const navigate = useNavigate();
 
   const handleSuccess = async (credentialResponse) => {
@@ -12,6 +14,7 @@ const GoogleButton = () => {
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
         toast.success('Logged in with Google');
+        login;
         navigate('/chat');
       }
     } catch (error) {
