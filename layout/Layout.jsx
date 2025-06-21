@@ -1,11 +1,14 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Login from '../src/pages/Login';
 import Register from '../src/pages/Register';
+
+const Navigate = useNavigate();
 
 const handleLogout = () => {
   localStorage.removeItem('token');
   window.location.reload();
+  Navigate('/');
 };
 
 const Layout = ({ children }) => {
