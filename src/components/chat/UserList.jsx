@@ -47,8 +47,10 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
 
     if (socket) {
       const handleOnlineUsers = (onlineUsers) => {
+        console.log('UserList: Received onlineUsers from backend:', onlineUsers);
         if (isMounted) {
-          const ids = new Set(onlineUsers.map(user => user._id));
+          // Normalize all user IDs to strings
+          const ids = new Set((onlineUsers || []).map(user => String(user._id)));
           setOnlineUserIds(ids);
         }
       };

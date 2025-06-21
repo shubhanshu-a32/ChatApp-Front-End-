@@ -8,6 +8,8 @@ const ChatBox = ({ selectedUser, addUnreadUserId }) => {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
   const scrollRef = useRef(null);
+  // Track which users have already triggered an alert
+  const alertedUserIds = useRef(new Set());
 
   useEffect(() => {
     if (!selectedUser || !socket) {
@@ -28,9 +30,13 @@ const ChatBox = ({ selectedUser, addUnreadUserId }) => {
     const handleReceiveMessage = (msg) => {
       if (msg.from !== currentUser._id) {
         console.log('ChatBox: Received message', msg);
-        // If the message is from another user and that user is not currently selected, mark as unread
+        // Only alert the first time for this user in this session and if chat is not open
         if (msg.from !== selectedUser?._id && typeof addUnreadUserId === 'function') {
           addUnreadUserId(msg.from);
+          if (!alertedUserIds.current.has(String(msg.from))) {
+            alertedUserIds.current.add(String(msg.from));
+            window.alert(`New message from ${msg.user || 'a user'}!`);
+          }
         }
       }
       setMessages((prev) => [...prev, msg]);
