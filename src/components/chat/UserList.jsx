@@ -115,8 +115,23 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
     }
   }, [socket, currentUser?._id]);
   
+  // Also refresh online users after socket reconnect
+  useEffect(() => {
+    if (socket) {
+      socket.on('connect', () => {
+        console.log('UserList: Socket reconnected, refreshing online users');
+        socket.emit('get-online-users');
+      });
+    }
+    return () => {
+      if (socket) {
+        socket.off('connect');
+      }
+    };
+  }, [socket]);
+  
   // Debug log before rendering
-  console.log('UserList render, users:', users, 'type:', typeof users, 'isArray:', Array.isArray(users));
+  console.log('UserList render, users:', users, 'onlineUserIds:', Array.from(onlineUserIds), 'unreadUserIds:', Array.from(unreadUserIds));
 
   if (!currentUser) {
     return (
