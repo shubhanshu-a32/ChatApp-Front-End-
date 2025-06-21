@@ -11,6 +11,64 @@ export const SocketProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   const authErrorToastId = useRef(null);
 
+  // Function to establish socket connection
+  const establishSocketConnection = (token) => {
+    const newSocket = io(import.meta.env.VITE_SERVER_URL || 'http://localhost:5000', {
+      auth: { token },
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      path: '/socket.io',
+      withCredentials: true,
+      autoConnect: true,
+      forceNew: true,
+    });
+
+    newSocket.on('connect', () => {
+      console.log('Socket connected successfully');
+      setIsConnected(true);
+      toast.success('Connected to chat server');
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      setIsConnected(false);
+      
+      if (error.message.includes('Authentication error')) {
+        if (!authErrorToastId.current || !toast.isActive(authErrorToastId.current)) {
+          authErrorToastId.current = toast.error('Authentication failed. Please log in again.');
+        }
+        localStorage.removeItem('token');
+        setCurrentUser(null);
+        newSocket.disconnect();
+      } else {
+        toast.error('Connection error. Please try again.');
+      }
+    });
+
+    newSocket.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason);
+      setIsConnected(false);
+      
+      if (reason === 'io server disconnect') {
+        // Server initiated disconnect, try to reconnect
+        newSocket.connect();
+      } else if (reason === 'io client disconnect') {
+        // Client initiated disconnect, don't reconnect
+        toast.error('Disconnected from chat server');
+      }
+    });
+
+    newSocket.on('error', (error) => {
+      console.error('Socket error:', error);
+      toast.error('Connection error. Please try again.');
+    });
+
+    setSocket(newSocket);
+  };
+
+  // Initial setup - check for existing token and fetch user
   useEffect(() => {
     const token = localStorage.getItem('token');
 
@@ -21,74 +79,14 @@ export const SocketProvider = ({ children }) => {
 
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users/me`, {
+        const res = await axios.get(`${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}/api/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
         setCurrentUser(res.data.user);
-
-        const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
-          auth: { token },
-          transports: ['websocket', 'polling'],
-          reconnection: true,
-          reconnectionAttempts: 5,
-          reconnectionDelay: 1000,
-          path: '/socket.io',
-          withCredentials: true,
-          autoConnect: true,
-          forceNew: true,
-        });
-
-        newSocket.on('connect', () => {
-          console.log('Socket connected successfully');
-          setIsConnected(true);
-          toast.success('Connected to chat server');
-        });
-
-        newSocket.on('connect_error', (error) => {
-          console.error('Socket connection error:', error);
-          setIsConnected(false);
-          
-          if (error.message.includes('Authentication error')) {
-            if (!authErrorToastId.current || !toast.isActive(authErrorToastId.current)) {
-              authErrorToastId.current = toast.error('Authentication failed. Please log in again.');
-            }
-            localStorage.removeItem('token');
-            setCurrentUser(null);
-            newSocket.disconnect();
-          } else {
-            toast.error('Connection error. Please try again.');
-          }
-        });
-
-        newSocket.on('disconnect', (reason) => {
-          console.log('Socket disconnected:', reason);
-          setIsConnected(false);
-          
-          if (reason === 'io server disconnect') {
-            // Server initiated disconnect, try to reconnect
-            newSocket.connect();
-          } else if (reason === 'io client disconnect') {
-            // Client initiated disconnect, don't reconnect
-            toast.error('Disconnected from chat server');
-          }
-        });
-
-        newSocket.on('error', (error) => {
-          console.error('Socket error:', error);
-          toast.error('Connection error. Please try again.');
-        });
-
-        setSocket(newSocket);
-
-        return () => {
-          if (newSocket) {
-            newSocket.removeAllListeners();
-            newSocket.disconnect();
-          }
-        };
+        establishSocketConnection(token);
       } catch (err) {
         console.error('Error fetching user or connecting socket:', err);
         if (!authErrorToastId.current || !toast.isActive(authErrorToastId.current)) {
@@ -101,6 +99,26 @@ export const SocketProvider = ({ children }) => {
 
     fetchUser();
   }, []);
+
+  // Handle socket connection when currentUser is set (e.g., after Google OAuth login)
+  useEffect(() => {
+    if (currentUser && !socket) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        establishSocketConnection(token);
+      }
+    }
+  }, [currentUser, socket]);
+
+  // Cleanup socket on unmount
+  useEffect(() => {
+    return () => {
+      if (socket) {
+        socket.removeAllListeners();
+        socket.disconnect();
+      }
+    };
+  }, [socket]);
 
   return (
     <SocketContext.Provider value={{ socket, currentUser, setCurrentUser, isConnected }}>
