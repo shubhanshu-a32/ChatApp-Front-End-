@@ -90,7 +90,7 @@ const useAuth = () => {
     localStorage.removeItem('token');
     setCurrentUser(null);
     toast.success('Logged out');
-    navigate('/');
+    navigate('/login');
   };
 
   return { login, register, googleLogin, logout };
