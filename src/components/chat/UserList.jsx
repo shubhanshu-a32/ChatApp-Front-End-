@@ -4,7 +4,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import ErrorBoundary from '../ErrorBoundary';
 
-const UserList = ({ onSelectUser, selectedUser }) => {
+const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => {
   const { currentUser, socket } = useContext(SocketContext);
   const [users, setUsers] = useState([]);
   const [onlineUserIds, setOnlineUserIds] = useState(new Set());
@@ -154,6 +154,7 @@ const UserList = ({ onSelectUser, selectedUser }) => {
       <div className="space-y-2">
         {(Array.isArray(users) ? users : []).map((user) => {
           const isOnline = onlineUserIds.has(user._id);
+          const hasUnread = unreadUserIds.has(user._id);
           return (
             <div
               key={user._id}
@@ -166,7 +167,12 @@ const UserList = ({ onSelectUser, selectedUser }) => {
                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}
               `}
             >
-              <span className="truncate" style={{ maxWidth: '120px' }}>{user.name || `User ${user._id}`}</span>
+              <span className="truncate flex items-center gap-2" style={{ maxWidth: '120px' }}>
+                {user.name || `User ${user._id}`}
+                {hasUnread && (
+                  <span className="inline-block w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" title="New message"></span>
+                )}
+              </span>
               {isOnline && (
                 <span className="flex items-center gap-1">
                   <span className="w-3 h-3 bg-green-500 rounded-full border-2 border-white shadow"></span>

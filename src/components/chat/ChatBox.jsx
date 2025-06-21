@@ -3,7 +3,7 @@ import { SocketContext } from '../../context/SocketContext';
 import MessageItem from './MessageItem';
 import { toast } from 'react-hot-toast';
 
-const ChatBox = ({ selectedUser }) => {
+const ChatBox = ({ selectedUser, addUnreadUserId }) => {
   const { socket, currentUser } = useContext(SocketContext);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
@@ -28,6 +28,10 @@ const ChatBox = ({ selectedUser }) => {
     const handleReceiveMessage = (msg) => {
       console.log('ChatBox: Received message', msg);
       setMessages((prev) => [...prev, msg]);
+      // If the message is from another user and that user is not currently selected, mark as unread
+      if (msg.from !== currentUser._id && msg.from !== selectedUser._id && typeof addUnreadUserId === 'function') {
+        addUnreadUserId(msg.from);
+      }
     };
 
     socket.off('chatHistory', handleChatHistory);
@@ -39,7 +43,7 @@ const ChatBox = ({ selectedUser }) => {
       socket.off('chatHistory', handleChatHistory);
       socket.off('receive_message', handleReceiveMessage);
     };
-  }, [selectedUser, socket, currentUser._id]);
+  }, [selectedUser, socket, currentUser._id, addUnreadUserId]);
 
   const sendMessage = () => {
     if (!message.trim()) return;
