@@ -20,7 +20,7 @@ const UserList = ({ onSelectUser, selectedUser }) => {
       try {
         setLoading(true);
         setError(null);
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users`, {
+        const res = await axios.get(`${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}/api/users`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -47,23 +47,32 @@ const UserList = ({ onSelectUser, selectedUser }) => {
 
     if (socket) {
       const handleOnlineUsers = (onlineUsers) => {
+        console.log('👥 UserList received online users:', onlineUsers);
         if (isMounted) {
           const ids = new Set(onlineUsers.map(user => user._id));
+          console.log('👥 Setting online user IDs:', Array.from(ids));
           setOnlineUserIds(ids);
         }
       };
       
       const handleUserOnline = (user) => {
+        console.log('🟢 UserList: User came online:', user);
         if (isMounted && user?._id) {
-          setOnlineUserIds(prev => new Set(prev).add(user._id));
+          setOnlineUserIds(prev => {
+            const newSet = new Set(prev).add(user._id);
+            console.log('🟢 Updated online user IDs:', Array.from(newSet));
+            return newSet;
+          });
         }
       };
       
       const handleUserOffline = ({ userId }) => {
+        console.log('🔴 UserList: User went offline:', userId);
         if (isMounted && userId) {
           setOnlineUserIds(prev => {
             const newSet = new Set(prev);
             newSet.delete(userId);
+            console.log('🔴 Updated online user IDs after offline:', Array.from(newSet));
             return newSet;
           });
         }
@@ -73,6 +82,7 @@ const UserList = ({ onSelectUser, selectedUser }) => {
       socket.on('user-online', handleUserOnline);
       socket.on('user-offline', handleUserOffline);
       
+      console.log('📡 Emitting get-online-users');
       socket.emit('get-online-users');
 
       return () => {

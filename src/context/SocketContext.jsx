@@ -13,6 +13,8 @@ export const SocketProvider = ({ children }) => {
 
   // Function to establish socket connection
   const establishSocketConnection = (token) => {
+    console.log('🔌 Establishing socket connection with token:', token ? 'present' : 'missing');
+    
     const newSocket = io(import.meta.env.VITE_SERVER_URL || 'http://localhost:5000', {
       auth: { token },
       transports: ['websocket', 'polling'],
@@ -26,13 +28,13 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on('connect', () => {
-      console.log('Socket connected successfully');
+      console.log('✅ Socket connected successfully');
       setIsConnected(true);
       toast.success('Connected to chat server');
     });
 
     newSocket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
+      console.error('❌ Socket connection error:', error);
       setIsConnected(false);
       
       if (error.message.includes('Authentication error')) {
@@ -48,7 +50,7 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on('disconnect', (reason) => {
-      console.log('Socket disconnected:', reason);
+      console.log('🔌 Socket disconnected:', reason);
       setIsConnected(false);
       
       if (reason === 'io server disconnect') {
@@ -61,8 +63,21 @@ export const SocketProvider = ({ children }) => {
     });
 
     newSocket.on('error', (error) => {
-      console.error('Socket error:', error);
+      console.error('❌ Socket error:', error);
       toast.error('Connection error. Please try again.');
+    });
+
+    // Add listeners for online users events
+    newSocket.on('online-users', (users) => {
+      console.log('👥 Received online users:', users);
+    });
+
+    newSocket.on('user-online', (user) => {
+      console.log('🟢 User came online:', user);
+    });
+
+    newSocket.on('user-offline', (data) => {
+      console.log('🔴 User went offline:', data);
     });
 
     setSocket(newSocket);
