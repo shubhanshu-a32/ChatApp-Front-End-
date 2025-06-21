@@ -129,7 +129,10 @@ const UserList = ({ onSelectUser, selectedUser }) => {
 
   return (
     <div className="w-64 bg-white rounded-lg shadow p-4">
-      <h3 className="text-lg font-semibold mb-4">All Users</h3>
+      <h3 className="text-lg font-semibold mb-2">All Users</h3>
+      <div className="mb-2 text-sm text-green-700 font-semibold">
+        Online Users: {onlineUserIds.size}/{users.length}
+      </div>
       <div className="space-y-2">
         {(Array.isArray(users) ? users : []).map((user) => {
           const isOnline = onlineUserIds.has(user._id);
@@ -137,14 +140,21 @@ const UserList = ({ onSelectUser, selectedUser }) => {
             <div
               key={user._id}
               onClick={() => onSelectUser(user)}
-              className={`p-2 rounded cursor-pointer flex items-center justify-between ${
-                selectedUser?._id === user._id
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-50 hover:bg-gray-100'
-              }`}
+              className={`p-2 rounded cursor-pointer flex items-center justify-between transition-colors duration-150
+                ${selectedUser?._id === user._id
+                  ? 'bg-blue-600 text-white'
+                  : isOnline
+                    ? 'bg-green-50 text-black font-semibold border border-green-400'
+                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}
+              `}
             >
-              <span>{user.name || `User ${user._id}`}</span>
-              {isOnline && <span className="w-2 h-2 bg-green-500 rounded-full"></span>}
+              <span className="truncate" style={{ maxWidth: '120px' }}>{user.name || `User ${user._id}`}</span>
+              {isOnline && (
+                <span className="flex items-center gap-1">
+                  <span className="w-3 h-3 bg-green-500 rounded-full border-2 border-white shadow"></span>
+                  <span className="text-xs text-green-700 font-bold">Online</span>
+                </span>
+              )}
             </div>
           );
         })}

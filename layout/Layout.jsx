@@ -11,10 +11,11 @@ const handleLogout = () => {
 
 const Layout = ({ children }) => {
   const isLoggedIn = Boolean(localStorage.getItem('token'));
+  const logoLink = isLoggedIn ? '/chat' : '/';
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 dark:from-zinc-900 dark:to-zinc-800 text-gray-800 dark:text-gray-100 transition-colors duration-300">
       <header className="flex justify-between items-center py-4 px-6 bg-white dark:bg-zinc-900 shadow mb-4">
-        <Link to="/" className="text-xl font-bold hover:text-blue-600 transition-colors">ChatApp+</Link>
+        <Link to={logoLink} className="text-xl font-bold hover:text-blue-600 transition-colors">ChatApp+</Link>
         {isLoggedIn && (
           <button
             onClick={handleLogout}
