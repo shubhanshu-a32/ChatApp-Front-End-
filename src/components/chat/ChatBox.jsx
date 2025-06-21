@@ -26,13 +26,14 @@ const ChatBox = ({ selectedUser, addUnreadUserId }) => {
       setMessages(data);
     };
     const handleReceiveMessage = (msg) => {
-      console.log('ChatBox: Received message', msg);
-      setMessages((prev) => [...prev, msg]);
-      // If the message is from another user and that user is not currently selected, mark as unread
-      if (msg.from !== currentUser._id && msg.from !== selectedUser?._id && typeof addUnreadUserId === 'function') {
-        console.log('ChatBox: Marking user as unread:', msg.from);
-        addUnreadUserId(msg.from);
+      if (msg.from !== currentUser._id) {
+        console.log('ChatBox: Received message', msg);
+        // If the message is from another user and that user is not currently selected, mark as unread
+        if (msg.from !== selectedUser?._id && typeof addUnreadUserId === 'function') {
+          addUnreadUserId(msg.from);
+        }
       }
+      setMessages((prev) => [...prev, msg]);
     };
 
     socket.off('chatHistory', handleChatHistory);

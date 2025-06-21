@@ -47,34 +47,23 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
 
     if (socket) {
       const handleOnlineUsers = (onlineUsers) => {
-        console.log('👥 UserList received online users:', onlineUsers);
         if (isMounted) {
           const ids = new Set(onlineUsers.map(user => user._id));
-          console.log('👥 Setting online user IDs:', Array.from(ids));
           setOnlineUserIds(ids);
         }
       };
       
       const handleUserOnline = (user) => {
-        console.log('🟢 UserList: User came online:', user);
         if (isMounted && user?._id) {
-          setOnlineUserIds(prev => {
-            const newSet = new Set(prev).add(user._id);
-            console.log('🟢 Updated online user IDs:', Array.from(newSet));
-            return newSet;
-          });
+          // Re-emit get-online-users to refresh the list for all
+          socket.emit('get-online-users');
         }
       };
       
       const handleUserOffline = ({ userId }) => {
-        console.log('🔴 UserList: User went offline:', userId);
         if (isMounted && userId) {
-          setOnlineUserIds(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(userId);
-            console.log('🔴 Updated online user IDs after offline:', Array.from(newSet));
-            return newSet;
-          });
+          // Re-emit get-online-users to refresh the list for all
+          socket.emit('get-online-users');
         }
       };
 
@@ -82,7 +71,6 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
       socket.on('user-online', handleUserOnline);
       socket.on('user-offline', handleUserOffline);
       
-      console.log('📡 Emitting get-online-users');
       socket.emit('get-online-users');
 
       return () => {
@@ -131,7 +119,7 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
   }, [socket]);
   
   // Debug log before rendering
-  console.log('UserList render, users:', users, 'onlineUserIds:', Array.from(onlineUserIds), 'unreadUserIds:', Array.from(unreadUserIds));
+  console.log('UserList render, users:', users.map(u => u._id), 'onlineUserIds:', Array.from(onlineUserIds), 'unreadUserIds:', Array.from(unreadUserIds));
 
   if (!currentUser) {
     return (
@@ -170,6 +158,9 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
         {(Array.isArray(users) ? users : []).map((user) => {
           const isOnline = onlineUserIds.has(user._id);
           const hasUnread = unreadUserIds.has(user._id);
+          if (hasUnread) {
+            console.log('UserList: User with unread:', user._id, user.name);
+          }
           return (
             <div
               key={user._id}
@@ -185,7 +176,9 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
               <span className="truncate flex items-center gap-2" style={{ maxWidth: '120px' }}>
                 {user.name || `User ${user._id}`}
                 {hasUnread && (
-                  <span className="inline-block w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" title="New message"></span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full animate-pulse" title="New message">
+                    <span role="img" aria-label="envelope">📩</span> New
+                  </span>
                 )}
               </span>
               {isOnline && (
