@@ -9,6 +9,7 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
   const authErrorToastId = useRef(null);
 
   // Function to establish socket connection
@@ -89,6 +90,7 @@ export const SocketProvider = ({ children }) => {
 
     if (!token) {
       console.log('No token found in localStorage');
+      setLoading(false);
       return;
     }
 
@@ -109,6 +111,8 @@ export const SocketProvider = ({ children }) => {
         }
         localStorage.removeItem('token');
         setCurrentUser(null);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -136,7 +140,7 @@ export const SocketProvider = ({ children }) => {
   }, [socket]);
 
   return (
-    <SocketContext.Provider value={{ socket, currentUser, setCurrentUser, isConnected }}>
+    <SocketContext.Provider value={{ socket, currentUser, setCurrentUser, isConnected, loading }}>
       {children}
     </SocketContext.Provider>
   );

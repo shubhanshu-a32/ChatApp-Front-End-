@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import Login from '../src/pages/Login';
 import Register from '../src/pages/Register';
-
+import { SocketContext } from '../src/context/SocketContext';
 
 const handleLogout = () => {
   localStorage.removeItem('token');
@@ -10,12 +10,18 @@ const handleLogout = () => {
 };
 
 const Layout = ({ children }) => {
+  const { currentUser } = useContext(SocketContext);
   const isLoggedIn = Boolean(localStorage.getItem('token'));
   const logoLink = isLoggedIn ? '/chat' : '/';
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 dark:from-zinc-900 dark:to-zinc-800 text-gray-800 dark:text-gray-100 transition-colors duration-300">
       <header className="flex justify-between items-center py-4 px-6 bg-white dark:bg-zinc-900 shadow mb-4">
-        <Link to={logoLink} className="text-xl font-bold hover:text-blue-600 transition-colors">ChatApp+</Link>
+        <div className="flex items-center gap-6">
+          <Link to={logoLink} className="text-xl font-bold hover:text-blue-600 transition-colors">ChatApp+</Link>
+          {isLoggedIn && currentUser && (
+            <span className="text-base font-semibold text-blue-700">{currentUser.name}</span>
+          )}
+        </div>
         {isLoggedIn && (
           <button
             onClick={handleLogout}

@@ -1,12 +1,26 @@
 import { AnimatePresence } from 'framer-motion';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
 import Layout from '../layout/Layout';
 import { ToastContainer } from 'react-toastify';
 import { Toaster } from 'react-hot-toast';
+import { useContext, useEffect } from 'react';
+import { SocketContext } from './context/SocketContext';
 
 const App = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { currentUser, loading } = useContext(SocketContext);
+
+  useEffect(() => {
+    if (!loading && currentUser && location.pathname === '/') {
+      navigate('/chat', { replace: true });
+    }
+  }, [loading, currentUser, location.pathname, navigate]);
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen text-xl">Loading...</div>;
+  }
 
   return (
     <>
