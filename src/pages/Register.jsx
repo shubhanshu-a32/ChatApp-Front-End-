@@ -12,8 +12,6 @@ const Register = () => {
     password: '',
   });
 
-  const navigate = useNavigate();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
