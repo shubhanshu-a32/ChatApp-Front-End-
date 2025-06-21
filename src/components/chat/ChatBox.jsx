@@ -61,7 +61,7 @@ const ChatBox = ({ selectedUser }) => {
 
     console.log('ChatBox: Sending message', msgData);
     socket.emit('send_message', msgData);
-    setMessages((prev) => [...prev, { ...msgData, self: true, user: currentUser.name }]);
+    // Do NOT add the message locally; wait for the socket to echo it back
     setMessage('');
   };
 

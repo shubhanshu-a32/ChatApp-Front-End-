@@ -97,10 +97,21 @@ const UserList = ({ onSelectUser, selectedUser }) => {
     };
   }, [socket, currentUser?._id]);
   
-  // Re-emit get-online-users when socket connects or user logs in
+  // Re-emit get-online-users and refetch users when socket connects or user logs in
   useEffect(() => {
     if (socket && currentUser?._id) {
       socket.emit('get-online-users');
+      // Refetch users to ensure the list is up to date
+      (async () => {
+        try {
+          const res = await axios.get(`${import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'}/api/users`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+          });
+          setUsers(Array.isArray(res.data) ? res.data : []);
+        } catch {}
+      })();
     }
   }, [socket, currentUser?._id]);
   
