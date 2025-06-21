@@ -6,17 +6,17 @@ const Chat = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [unreadUserIds, setUnreadUserIds] = useState(new Set());
 
-  // Add a userId to the unread set
+  // Add a userId to the unread set (normalize to string)
   const addUnreadUserId = useCallback((userId) => {
-    setUnreadUserIds(prev => new Set(prev).add(userId));
+    setUnreadUserIds(prev => new Set(prev).add(String(userId)));
   }, []);
 
-  // Clear unread for selected user
+  // Clear unread for selected user (normalize to string)
   useEffect(() => {
     if (selectedUser?._id) {
       setUnreadUserIds(prev => {
         const newSet = new Set(prev);
-        newSet.delete(selectedUser._id);
+        newSet.delete(String(selectedUser._id));
         return newSet;
       });
     }

@@ -118,8 +118,12 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
     };
   }, [socket]);
   
+  // Normalize all user IDs to strings for comparison
+  const onlineUserIdsStr = new Set(Array.from(onlineUserIds).map(String));
+  const unreadUserIdsStr = new Set(Array.from(unreadUserIds).map(String));
+
   // Debug log before rendering
-  console.log('UserList render, users:', users.map(u => u._id), 'onlineUserIds:', Array.from(onlineUserIds), 'unreadUserIds:', Array.from(unreadUserIds));
+  console.log('UserList render, users:', users.map(u => u._id), 'onlineUserIds:', Array.from(onlineUserIdsStr), 'unreadUserIds:', Array.from(unreadUserIdsStr));
 
   if (!currentUser) {
     return (
@@ -152,12 +156,12 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
     <div className="w-64 bg-white rounded-lg shadow p-4">
       <h3 className="text-lg font-semibold mb-2">All Users</h3>
       <div className="mb-2 text-sm text-green-700 font-semibold">
-        Online Users: {onlineUserIds.size}/{users.length}
+        Online Users: {onlineUserIdsStr.size}/{users.length}
       </div>
       <div className="space-y-2">
         {(Array.isArray(users) ? users : []).map((user) => {
-          const isOnline = onlineUserIds.has(user._id);
-          const hasUnread = unreadUserIds.has(user._id);
+          const isOnline = onlineUserIdsStr.has(String(user._id));
+          const hasUnread = unreadUserIdsStr.has(String(user._id));
           if (hasUnread) {
             console.log('UserList: User with unread:', user._id, user.name);
           }
