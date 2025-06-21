@@ -191,9 +191,7 @@ const UserList = ({ onSelectUser, selectedUser, unreadUserIds = new Set() }) => 
               <span className="truncate flex items-center gap-2" style={{ maxWidth: '120px' }}>
                 {String(user._id) === String(currentUser?._id) ? 'You' : (user.name || `User ${user._id}`)}
                 {hasUnread && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full animate-pulse" title="New message">
-                    <span role="img" aria-label="envelope">📩</span> New
-                  </span>
+                  <span className="inline-block w-3 h-3 bg-red-500 rounded-full animate-pulse" title="New message"></span>
                 )}
               </span>
               {isOnline && (
